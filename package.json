@@ -1,8 +1,10 @@
 {
   "name": "brat-api",
   "version": "1.0.0",
-  "type": "module",
-  "dependencies": {
-    "axios": "^1.6.8"
-  }
+  "description": "API brat untuk Vercel",
+  "main": "api/brat.js",
+  "scripts": {
+    "start": "node api/brat.js"
+  },
+  "dependencies": {}
 }
