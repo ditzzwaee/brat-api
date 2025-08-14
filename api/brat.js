@@ -1,47 +1,16 @@
-const express = require("express");
-const { createCanvas, registerFont } = require("canvas");
+export default async function handler(req, res) {
+    const { text = "BRAT", bg = "white", color = "black" } = req.query;
 
-const app = express();
+    // API luar yang langsung hasilkan gambar
+    const apiUrl = `https://api.bratgenerator.com/create?text=${encodeURIComponent(text)}&bg=${bg}&color=${color}`;
 
-// Daftarkan font (gunakan font bawaan atau upload ke folder fonts)
-registerFont(__dirname + "/../fonts/SANTO.ttf", { family: "SANTO" });
+    try {
+        const response = await fetch(apiUrl);
+        const buffer = await response.arrayBuffer();
 
-app.get("/", (req, res) => {
-    const text = req.query.text || "BRAT";
-    const bgColor = req.query.bg || "white";
-    const color = req.query.color || "black";
-    const fontFamily = req.query.font || "SANTO";
-
-    const canvas = createCanvas(1000, 1000);
-    const ctx = canvas.getContext("2d");
-
-    // Background
-    ctx.fillStyle = bgColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Text settings
-    ctx.fillStyle = color;
-    ctx.font = `100px "${fontFamily}"`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-
-    // Bikin teks otomatis turun kalau panjang
-    const words = text.split(" ");
-    let line = "";
-    let y = canvas.height / 2 - (words.length * 60) / 2;
-
-    for (let i = 0; i < words.length; i++) {
-        line += words[i] + " ";
-        if (ctx.measureText(line).width > 800 || i === words.length - 1) {
-            ctx.fillText(line.trim(), canvas.width / 2, y);
-            line = "";
-            y += 120;
-        }
+        res.setHeader("Content-Type", "image/png");
+        res.send(Buffer.from(buffer));
+    } catch (err) {
+        res.status(500).json({ error: "Gagal memproses gambar" });
     }
-
-    res.setHeader("Content-Type", "image/png");
-    canvas.pngStream().pipe(res);
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✅ Brat API running on port ${PORT}`));
+}
